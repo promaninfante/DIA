@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <Button
+        android:id="@+id/signup"
+        android:layout_marginTop="270dp"
+        android:layout_width="180dp"
+        android:layout_height="wrap_content"
+        android:text="Registrarse"
+        android:onClick="signup"
+        android:layout_gravity="center"/>
+
+    <Button
+        android:id="@+id/signin"
+        android:layout_marginTop="20dp"
+        android:layout_width="180dp"
+        android:layout_height="wrap_content"
+        android:text="Log in"
+        android:onClick="login"
+        android:layout_gravity="center"/>
+
+
+</LinearLayout>

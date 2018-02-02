@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "404575244029",
+    "firebase_url": "https://chatapp-e1e5b.firebaseio.com",
+    "project_id": "chatapp-e1e5b",
+    "storage_bucket": "chatapp-e1e5b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:404575244029:android:b7e6418d66ea6af4",
+        "android_client_info": {
+          "package_name": "com.example.luira.dia"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "404575244029-mq338cmtmlin4fmjrpqeetpdqv9lj231.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.luira.dia",
+            "certificate_hash": "8f56207760a254ab48074bf3ce98966bf6e9340b"
+          }
+        },
+        {
+          "client_id": "404575244029-lepf37gog7o37g5ifgvnaq9b2hv871b9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAuSXrS7G3cacR8XLhvz5lBLXIWAeqo5rY"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "404575244029-lepf37gog7o37g5ifgvnaq9b2hv871b9.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
