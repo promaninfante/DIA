@@ -1,9 +1,12 @@
 package com.example.luira.dia;
 
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -11,6 +14,7 @@ import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -26,11 +30,19 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.scottyab.aescrypt.AESCrypt;
 
+import java.security.GeneralSecurityException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -40,8 +52,11 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView mMessageList;
     Adapter adapter;
     String text,user,time;
+    String passDialog;
     List<ChatMessage> m;
-
+    final Context c = this;
+    String encryptedMsg = null;
+    EditText userInputDialogEditText;
     private static int SIGN_IN_REQUEST_CODE = 1;
     FloatingActionButton fab;
 
@@ -57,6 +72,35 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
         }
+        if(item.getItemId() == R.id.menu_password){
+            LayoutInflater layoutInflaterAndroid = LayoutInflater.from(c);
+            View mView = layoutInflaterAndroid.inflate(R.layout.user_input_dialog, null);
+            AlertDialog.Builder alertDialogBuilderUserInput = new AlertDialog.Builder(c);
+            alertDialogBuilderUserInput.setView(mView);
+
+            userInputDialogEditText = mView.findViewById(R.id.userInputDialog);
+            alertDialogBuilderUserInput
+                    .setCancelable(false)
+                    .setPositiveButton("Send", new DialogInterface.OnClickListener() {
+                        public static final String TAG ="" ;
+
+                        public void onClick(DialogInterface dialogBox, int id) {
+                            // ToDo get user input here
+                            passDialog = userInputDialogEditText.getText().toString();
+
+
+                        }
+                    })
+
+                    .setNegativeButton("Cancel",
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialogBox, int id) {
+                                    dialogBox.cancel();
+                                }
+                            });
+            AlertDialog alertDialogAndroid = alertDialogBuilderUserInput.create();
+            alertDialogAndroid.show();
+        }
         return true;
     }
 
@@ -65,6 +109,8 @@ public class MainActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.main_menu,menu);
         return true;
     }
+
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -140,16 +186,33 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         fab.setOnClickListener(new View.OnClickListener() {
+            public static final String TAG = "" ;
+
             @Override
             public void onClick(View v) {
                 final String messageValue = input.getText().toString().trim();
                 Date curDate = new Date();
                 SimpleDateFormat format = new SimpleDateFormat("hh:mm aa");
                 String DateToStr = format.format(curDate);
+//                String password = "password";
+
+
+
+                if(passDialog == null){
+                    Toast.makeText(MainActivity.this, "Debe introducir una contraseña para poder acceder!", Toast.LENGTH_LONG).show();
+
+                } else {
+
+                try {
+                     encryptedMsg = AESCrypt.encrypt(passDialog, messageValue);
+                }catch (GeneralSecurityException e){
+                    //handle error
+                }
                 if (!TextUtils.isEmpty(messageValue)) {
 
                     final DatabaseReference newPost = mDatabase.child("Messages").push();
-                    newPost.child("messageText").setValue(messageValue);
+                    newPost.child("messageText").setValue(encryptedMsg);
+                    Log.d(TAG, encryptedMsg);
                     newPost.child("messageUser").setValue(FirebaseAuth.getInstance().getCurrentUser().getDisplayName());
                     newPost.child("messageTime").setValue(DateToStr);
                 }
@@ -159,35 +222,45 @@ public class MainActivity extends AppCompatActivity {
 
                 input.setText("");
                 input.requestFocus();
-            }
+            }}
         });
         Log.d("prueba", "onStart: ");
 
         mDatabase.child("Messages").addValueEventListener(new ValueEventListener() {
+            public static final String TAG = "" ;
+
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 m.clear();
-                for(DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                String messageAfterDecrypt = null;
+                //String password = "password";
 
+
+                for(DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    
 
                     try{
                        text = snapshot.child("messageText").getValue().toString();
                        user  = snapshot.child("messageUser").getValue().toString();
                        time = snapshot.child("messageTime").getValue().toString();
-                    }catch (NullPointerException e){
+                       messageAfterDecrypt = AESCrypt.decrypt(passDialog, text);
+                        Log.d("MENSAJE DECRYPTED", "onDataChange: "+ messageAfterDecrypt);
+                    }catch (Exception e){
                         Log.d("TAG", e.toString());
                     }
 
 
                     Log.d("PRUEBA","Retrieve");
-                    m.add(new ChatMessage(text,user,time));
+                    m.add(new ChatMessage(messageAfterDecrypt,user,time));
                     adapter.notifyDataSetChanged();
 
-                }
-            }
+                }}
+
             @Override
             public void onCancelled(DatabaseError databaseError) {}
         });
+
+
 //        Query query = FirebaseDatabase.getInstance()
 //                .getReference()
 //                .child("Messages");
